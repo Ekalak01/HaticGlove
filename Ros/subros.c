@@ -1,20 +1,32 @@
-// Subscription object
-rcl_subscription_t subscriber;
-const char * topic_name = "test_topic";
+from example_interfaces.msg import Int64 
+from std_msgs.msg import String
+import rclpy
+import random
+from rclpy.node import Node
 
-// Get message type support
-const rosidl_message_type_support_t * type_support =
-  ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32);
+class NumberSub(Node):
+    def __init__(self):
+        super().__init__("tesa_sub")
+        qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT,
+                                          history=rclpy.qos.HistoryPolicy.KEEP_LAST,
+                                          depth=1)
+        self.publishers_ = self.create_subscription(String, "rostestkub", self.sub, qos_profile=qos_policy)
 
-// Set client QoS
-const rmw_qos_profile_t * qos_profile = &rmw_qos_profile_default;
+    def sub(self, msg):
+        data = list(map(int,msg.data.split(",")))
+        self.get_logger().info(f"sub: {data}")
+        # self.get_logger().info(f"x0: {data[0]}")
+        # self.get_logger().info(f"x1: {data[1]}")
+        # self.get_logger().info(f"x2: {data[2]}")
+        # self.get_logger().info(f"x3: {data[3]}")
+        
 
-// Initialize a subscriber with customized quality-of-service options
-rcl_ret_t rc = rclc_subscription_init(
-  &subscriber, &node,
-  type_support, topic_name, qos_profile);
 
-if (RCL_RET_OK != rc) {
-  ...  // Handle error
-  return -1;
-}
+def main(args=None):
+    rclpy.init(args=args)
+    node = NumberSub()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()
